@@ -16,7 +16,9 @@ type writer interface {
 //we use as :
 //aircat,mac=xxx temperature=1,humidity=2,value=3,hcho=4
 type influxdb struct {
-	addr string
+	db    string
+	addr  string
+	token string
 }
 
 func (s *influxdb) write(mac string, json string) {
@@ -27,7 +29,16 @@ func (s *influxdb) write(mac string, json string) {
 	if line := formatLineProtocol(mac, json); line != "" {
 		//we ignore error
 		go func() {
-			http.Post(fmt.Sprintf("http://%s/write?db=aircat", s.addr), "", strings.NewReader(line))
+			client := &http.Client{}
+			url := fmt.Sprintf("http://%s/write?db=%s", s.addr, s.db)
+			req, err := http.NewRequest("POST", url, strings.NewReader(line))
+			if err != nil {
+				return
+			}
+			req.Header.Set("Authorization", s.token)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			resp, err := client.Do(req)
+			resp.Body.Close()
 		}()
 	}
 

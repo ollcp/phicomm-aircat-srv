@@ -1,10 +1,10 @@
 FROM golang:alpine AS onBuild
 ADD  aircat-srv-go /go/src/github.com/corbamico/phicomm-aircat-srv/aircat-srv-go
 WORKDIR /go
-RUN  go build ./src/github.com/corbamico/phicomm-aircat-srv/aircat-srv-go
+RUN  cd ./src/github.com/corbamico/phicomm-aircat-srv/aircat-srv-go && go build .
 
 FROM alpine
-COPY --from=onBuild /go/aircat-srv-go  /aircat/aircat-srv-go
+COPY --from=onBuild /go/src/github.com/corbamico/phicomm-aircat-srv/aircat-srv-go/aircat-srv-go  /aircat/aircat-srv-go
 ADD  docker/aircat-srv/config.json     /aircat/config.json
 RUN addgroup -S aircat ; \
     adduser -S aircat -G aircat aircat ; \

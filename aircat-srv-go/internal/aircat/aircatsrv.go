@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
+	"time"
 )
 
 //AircatServer run at port 9000
@@ -21,7 +23,7 @@ func NewAircatServer() AircatServer {
 	controlChan := make(chan string)
 
 	return AircatServer{
-		w:           influxdb{addr: configs.InfluxdbServer},
+		w:           influxdb{addr: configs.InfluxdbServer, db: configs.InfluxdbDB, token: configs.InfluxdbToken},
 		controlChan: controlChan,
 		device:      nil,
 		restSrv:     newrestServer(controlChan),
@@ -112,7 +114,10 @@ func (client *aircatDevice) run() {
 		if msg.header.MsgType == 4 {
 			client.msg = msg
 		}
-		client.sever.w.write(hex.EncodeToString(msg.header.Mac[1:7]), msg.json)
+		if strings.Contains(msg.json, "temperature") {
+			log.Printf("DATA: %d %s", time.Now().Unix(), msg.json)
+			client.sever.w.write(hex.EncodeToString(msg.header.Mac[1:7]), msg.json)
+		}
 	}
 	client.conn.Close()
 }
@@ -141,6 +146,8 @@ type Config struct {
 	RESTServerAddr string //default as ":8080"
 	Influxdb       bool
 	InfluxdbServer string //default as "localhost:8086"
+	InfluxdbDB     string //default as "aircat"
+	InfluxToken    string
 }
 
 var configs Config
@@ -162,8 +169,11 @@ func LoadConfig(file string) error {
 	if configs.RESTServerAddr == "" {
 		configs.RESTServerAddr = ":8080"
 	}
-	// if configs.InfluxdbServer == "" {
-	// 	configs.InfluxdbServer = "localhost:8086"
-	// }
+	if configs.InfluxdbServer == "" {
+		configs.InfluxdbServer = "localhost:8086"
+	}
+	if configs.InfluxdbDB == "" {
+		configs.InfluxdbDB = "aircat"
+	}
 	return nil
 }

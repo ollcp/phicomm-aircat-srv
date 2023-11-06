@@ -4,6 +4,8 @@ services:
     build: ..
     image: aircat-srv
     container_name: aircat-srv
+    volumes:
+      - /etc/localtime:/etc/localtime
     ports: 
       - "8080:8080"
       - "9000:9000"
@@ -13,14 +15,15 @@ services:
     environment: 
       INFLUXDB_DB: "aircat"
     volumes: 
-      - ./influxdb:/var/lib/influxdb
+      - ./influxdb/:/var/lib/influxdb2/
     ports:
-      - "8086:8086"      
+      - "8086:8086"
   grafana:
     image: grafana/grafana
     container_name: grafana
     volumes: 
       - ./grafana/provisioning:/etc/grafana/provisioning/
+      - ./grafana/grafana:/var/lib/grafana/
     ports: 
       - "3000:3000"
     
