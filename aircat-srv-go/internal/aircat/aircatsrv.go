@@ -147,7 +147,7 @@ type Config struct {
 	Influxdb       bool
 	InfluxdbServer string //default as "localhost:8086"
 	InfluxdbDB     string //default as "aircat"
-	InfluxToken    string
+	InfluxdbToken  string
 }
 
 var configs Config
